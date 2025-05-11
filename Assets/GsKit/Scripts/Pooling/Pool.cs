@@ -19,7 +19,6 @@ namespace GsKit.Pooling
         private int _minObjectCount = 0;
         private int _maxObjectCount = 0;
         private bool _limitObjectCount = false;
-        private bool _resetOnReturn = false;
 
         public class Object
         {
@@ -63,12 +62,6 @@ namespace GsKit.Pooling
             {
                 _pool.ReturnObjectToPool(_guid);
             }
-        }
-
-        public bool ResetOnReturn
-        {
-            get => _resetOnReturn;
-            set => _resetOnReturn = value;
         }
 
         public bool LimitObjectCount
@@ -123,11 +116,14 @@ namespace GsKit.Pooling
             GameObject prefab = _poolResource.PrefabResource.Prefab;
 
             _parent = new GameObject($"{prefab.name} Pool");
+            if (_poolResource.PreserveOnSceneChange)
+            {
+                UObject.DontDestroyOnLoad(_parent);
+            }
 
             MinObjectCount = _poolResource.MinimumObjects;
             MaxObjectCount = _poolResource.MaximumObjects;
             LimitObjectCount = _poolResource.LimitObjectCount;
-            ResetOnReturn = _poolResource.ResetOnReturn;
 
             List<Component> components = new List<Component>(prefab.GetComponents<Component>());
             for (int i = 0; i < components.Count; i++)
@@ -169,7 +165,8 @@ namespace GsKit.Pooling
             Guid guid = Guid.Empty;
             if (_objectGuidQueue.Count != 0) guid = _objectGuidQueue.Dequeue();
 
-            if (_objects.Count >= _maxObjectCount && !_limitObjectCount)
+            if ((_objects.Count >= _maxObjectCount && !_limitObjectCount) 
+                    || _objects.Count < _maxObjectCount)
             {
                 AddNewObjectToPool();
                 guid = _objectGuidQueue.Dequeue();
@@ -330,7 +327,7 @@ namespace GsKit.Pooling
                         Guid newGuid = Guid.NewGuid();
                         GameObject obj = _objects[objectGuid];
                         obj.SetActive(_poolResource.PrefabResource.Prefab.activeSelf);
-                        if (_resetOnReturn)
+                        if (_poolResource.ResetOnReturn)
                         {
                             foreach (Component component in _objectComponents[objectGuid])
                             {

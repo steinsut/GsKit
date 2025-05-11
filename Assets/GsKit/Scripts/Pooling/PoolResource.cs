@@ -29,9 +29,13 @@ namespace GsKit.Pooling
         [SerializeField]
         private bool _populateOnLoad;
 
-        [Tooltip("Check this if all components on the object should be reset. (If the component implements IResettable)")]
+        [Tooltip("Check this if chached components on the object should be reset on return. (If the component implements IResettable)")]
         [SerializeField]
         private bool _resetOnReturn;
+
+        [Tooltip("Don't destroy pool objects when a scene change happens.")]
+        [SerializeField]
+        private bool _preserveOnSceneChange;
 
         [SerializeField]
         [HideInInspector]
@@ -44,6 +48,7 @@ namespace GsKit.Pooling
         public int MaximumObjects => _maximumObjects;
         public bool ResetOnReturn => _resetOnReturn;
 
+        public bool PreserveOnSceneChange => _preserveOnSceneChange;
         public bool PopulateOnLoad => _populateOnLoad;
 
         public int ComponentMask => _componentMask;
